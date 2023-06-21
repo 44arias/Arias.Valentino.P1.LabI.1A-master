@@ -2,6 +2,7 @@ import re
 import os
 import json
 import csv
+import random
 
 path = "insumos.csv"
 
@@ -30,13 +31,14 @@ def menu():
     return opcion
 
 
-def menu2():
+def menu_2():
     print("""
         1. Agregar nuevo producto.
         2. Mostrar datos.
         3. Actualizar datos.
         4. Volver al menu anterior.
-        5. Salir del programa.
+        5. Siguiente menu.
+        6. Salir del programa.
         """)
     opcion = input("Ingrese una opción: ")
     return opcion
@@ -80,6 +82,7 @@ def formatear_csv(path: str):
             lista.append(diccionario_insumo)
     return lista
 
+lista_formateada = formatear_csv(path)
 
 # ----------------------------------------------------------------------------------------------------
 # 2
@@ -562,9 +565,8 @@ def agregar_nuevo_producto(lista: list, key: str, key2: str, key3: str, key4: st
     return lista
 
 
-# ----------------------------------------------------------------------------------------------------
-# Requerimientos extra
 # 2
+
 
 def actualizar_datos(lista: list, key: str, key2: str, key3: str, key4: str, key5: str):
     """
@@ -607,3 +609,71 @@ def actualizar_datos(lista: list, key: str, key2: str, key3: str, key4: str, key
         print("Datos actualizados guardados en el archivo nuevos_insumos.json.")
     else:
         print("Formato de exportación inválido. No se guardaron los datos actualizados.")
+
+# ----------------------------------------------------------------------------------------------------
+# 1.A
+
+def cargar_insumos():
+    def calcular_stock_disponible(insumo):
+        insumo['STOCK'] = random.randint(0, 10)
+        return insumo
+
+    archivo_csv = 'insumos.csv'
+
+    with open(archivo_csv, 'r', newline='', encoding='utf-8') as file:
+        reader = csv.DictReader(file)
+        data = list(reader)
+
+    data = list(map(calcular_stock_disponible, data))
+
+    return data
+
+insumos = cargar_insumos()
+print(insumos)
+
+# 1.B
+
+def realizar_venta():
+    """
+    Realiza la venta de un producto.
+
+    Muestra los productos disponibles y solicita al usuario el ID del producto y la cantidad deseada.
+    Verifica que el ID sea un número válido en el rango de 1 a 50 y realiza la venta si hay suficiente stock.
+    """
+    print("Productos disponibles:")
+    for insumo in insumos:
+        print(f"ID: {insumo['ID']}")
+        print(f"Descripción: {insumo['NOMBRE']}")
+        print(f"Marca: {insumo['MARCA']}")
+        print(f"Precio: ${insumo['PRECIO']}")
+        print(f"Stock disponible: {insumo['STOCK']}")
+        print("-----------------------------------")
+
+    try:
+        id_producto = input("Ingrese el ID del producto que desea vender: ")
+        cantidad = int(input("Ingrese la cantidad que desea vender: "))
+
+        if not (id_producto.isdigit() and 1 <= int(id_producto) <= 50):
+            raise ValueError("ID de producto inválido. Por favor, ingrese un ID válido.")
+
+        for insumo in insumos:
+            if insumo['ID'] == id_producto:
+                if insumo['STOCK'] >= cantidad:
+                    insumo['STOCK'] -= cantidad
+                    print("Venta realizada correctamente.")
+                else:
+                    print("No hay stock suficiente para realizar la venta. Por favor, compre menos cantidad.")
+                break
+        else:
+            print("ID de producto no encontrado. Por favor, ingrese un ID válido.")
+
+    except ValueError as e:
+        print(f"Error: {str(e)} Ingrese valores válidos para el ID del producto y la cantidad.")
+
+
+def menu_3():
+    print("1. Cargar datos desde archivo")
+    print("2. Realizar venta")
+    print("3. Salir")
+    opcion = input("Ingrese una opción: ")
+    return opcion
